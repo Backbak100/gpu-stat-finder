@@ -2,24 +2,25 @@
 #include <stdlib.h>
 #include <string.h>
 #define NUM "1234567890"
+#define TRUE 1
+#define FALSE 0
+
+int applesilicon_mchip = TRUE;
 
 int main (void) {
-    FILE *fp = popen("sudo powermetrics --samplers gpu_power -i 1000", "r");
 
-    char line[1024];
+    if (applesilicon_mchip) {
+        FILE *fp_chiptype = popen("system_profiler SPDisplaysDataType", "r");
 
-    while (fgets(line, sizeof(line), fp) != NULL) {
-        if (strstr(line, "GPU HW active residency:")){
-            printf("\rGPU Active Residency: ");
+        char line[1024];
+
+        float gpu_residency;
+
+        while (fgets(line, sizeof(line), fp_gpures) != NULL) {
+            if (sscanf(line, "GPU HW active residency:   %f", &gpu_residency) == 1)
+                printf("\rGPU Active Residency: %.2f%%", gpu_residency);
             fflush(stdout);
-            int i;
-            for (i = 0; !strchr(NUM, line[i]); i++);
-            for (int j = 0; j <= 4; j++) {
-                printf("%c", line[i]);
-                i++;
-            }
         }
-        fflush(stdout);
     }
 
     return 0;
