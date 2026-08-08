@@ -6,21 +6,15 @@
 #define TRUE 1
 #define FALSE 0
 
-//parses
+//parses powermetrics for active residency
 
 int applesilicon_mchip = TRUE;
 
 int main (void) {
 
-    CFMutableDictionaryRef properties = get_properties_for_gpu();
-
-    printf("GPU cores = %d\n", get_gpu_core_count(properties));
-
-    char *model = get_chip_model(properties);
-    printf("GPU model = %s\n", model);
-    free(model);
-
-    CFRelease(properties);
+    gpu_info_t gpu_info = get_gpu_info();
+    
+    printf("GPU Cores: %d\nChip Model: %s\n", gpu_info.core_count, gpu_info.chip_model);
 
     if (applesilicon_mchip) {
         FILE *fp_gpures = popen("sudo powermetrics --samplers gpu_power -i 1000", "r");
