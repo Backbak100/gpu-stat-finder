@@ -13,14 +13,14 @@ compile with
 
 General Workflow:
 find channels
-subscribe to interesting channel
-take 2 samples from the subscription (with a wait time between them)
+subscribe to channel
+sample from the subscription with a wait time
 find delta between the samples
 iterate through the sample/delta channels (the samples and deltas are stored in CFDictionary objects)
 extract those values
 */
 
-/*TYPES*/
+/*TYPEDEF*/
 
 //An opaque type, it js points to a subscription ig
 //cannot be destroyed
@@ -33,6 +33,11 @@ typedef CFDictionaryRef IOReportChannelRef;
 //IOReportSamples are represented as CFDictionaries
 //destroy with CFRelease()
 typedef CFDictionaryRef IOReportSampleRef;
+
+//An 'Ok' for the iteration function? in ioreport2.h
+enum {
+    kIOReportIterOk
+};
 
 /*CHANNELS*/
 
@@ -65,6 +70,7 @@ extern int IOReportChannelGetFormat(CFDictionaryRef samples);
 
 //A subscription allows you to easily poll an interesting channel
 //(for a use NULL, and b use 0 or NULL, im not sure what their acc purpose is)
+//destroy its return value with CFRelease()
 extern IOReportSubscriptionRef IOReportCreateSubscription(
     void* a, CFMutableDictionaryRef desiredChannels, CFMutableDictionaryRef* subbedChannels, uint64_t channel_id, CFTypeRef b);
 
@@ -72,11 +78,8 @@ extern IOReportSubscriptionRef IOReportCreateSubscription(
 
 //returns a CFDictionary with the data in the subscribed channels at that point in time
 //Put a as NULL
+//destroy its return value with CFRelease()
 extern CFDictionaryRef IOReportCreateSamples(IOReportSubscriptionRef iorsub, CFMutableDictionaryRef subbedChannels, CFTypeRef a);
-
-//put a as NULL again
-//Isn't necessary for basic arithmetic
-extern CFDictionaryRef IOReportCreateSamplesDelta(CFDictionaryRef prev, CFDictionaryRef current, CFTypeRef a);
 
 /*ITERATOR*/
 
@@ -92,5 +95,12 @@ extern void IOReportIterate(IOReportSampleRef samples, ioreportiterateblock bloc
 //put a as 0
 //gets an integer val from a 'simple' IO report channel
 extern long IOReportSimpleGetIntegerValue(IOReportChannelRef channel, int a);
+
+//put find out the different values of a, by cycling through IOReportStateGetNameForIndex();
+//gets residency from a kIOReportFormatState ??
+extern uint64_t IOReportStateGetResidency(CFDictionaryRef channel, int a);
+
+//do not need to destroy its return value with CFRelease()
+extern CFStringRef IOReportStateGetNameForIndex(CFDictionaryRef, int);
 
 #endif
