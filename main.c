@@ -1,34 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "staticstats.c"
-#define NUM "1234567890"
-#define TRUE 1
-#define FALSE 0
+#include "livestats.c"
 
-//parses powermetrics for active residency
+//compile with -framework CoreFoundation -framework IOKit -lIOReport -fblocks
 
-int applesilicon_mchip = TRUE;
+int applesilicon_mchip = 1;
 
 int main (void) {
 
-    gpu_info_t gpu_info = get_gpu_info();
-    
-    printf("GPU Cores: %d\nChip Model: %s\n", gpu_info.core_count, gpu_info.chip_model);
-
     if (applesilicon_mchip) {
-        FILE *fp_gpures = popen("sudo powermetrics --samplers gpu_power -i 1000", "r");
-        FILE *fp_chiptype = popen("system_profiler SPDisplaysDataType", "r");
-
-        char line[1024];
-
-        float gpu_residency;
-
-        while (fgets(line, sizeof(line), fp_gpures) != NULL) {
-            if (sscanf(line, "GPU HW active residency:   %f", &gpu_residency) == 1)
-                printf("\rGPU Active Residency: %.2f%%", gpu_residency);
-            fflush(stdout);
+        struct timespec start, end;
+        gpu_info_t *gpu_info = get_gpu_info();
+        
+        while(gpu_info) {
+            gpu_info_t *next = gpu_info->next_gpu;
+            printf("GPU %d\nGPU core count: %d\nChip model: %s\n\n", gpu_info->gpu_num, gpu_info->core_count, gpu_info->chip_model);
+            free(gpu_info);
+            gpu_info = next;
         }
+
+        while (1){
+            printf("\r\033[KGPU Active Residency = %.2f%%", get_gpu_residency_percent()); fflush(stdout);}
     }
 
     return 0;
