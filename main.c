@@ -1,5 +1,5 @@
-#include "staticstats.h"
-#include "livestats.h"
+#include "include/staticstats.h"
+#include "include/livestats.h"
 
 //compile with -framework CoreFoundation -framework IOKit -lIOReport -fblocks
 
