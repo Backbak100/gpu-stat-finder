@@ -101,6 +101,9 @@ extern long IOReportSimpleGetIntegerValue(IOReportChannelRef channel, int a);
 extern uint64_t IOReportStateGetResidency(CFDictionaryRef channel, int a);
 
 //do not need to destroy its return value with CFRelease()
-extern CFStringRef IOReportStateGetNameForIndex(CFDictionaryRef, int);
+extern CFStringRef IOReportStateGetNameForIndex(CFDictionaryRef channel, int state);
+
+//gets num of states in a channel as int
+extern int IOReportStateGetCount(CFDictionaryRef channel);
 
 #endif
