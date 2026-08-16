@@ -1,21 +1,24 @@
-#include "IOReport.h"
+#include "include/IOReport.h"
 #include <unistd.h>
 #include <time.h>
-#include "livestats.h"
+#include "include/livestats.h"
 
 IOReportSubscriptionRef get_input(CFMutableDictionaryRef *subbedChannels) {
+
+    if (*subbedChannels != NULL) *subbedChannels = NULL;
+
     CFMutableDictionaryRef channels = IOReportCopyChannelsInGroup(CFSTR("GPU Stats"), CFSTR("GPU Performance States"), 0, 0, 0);
 
     IOReportSubscriptionRef subscription = IOReportCreateSubscription(NULL, channels, subbedChannels, 0, 0);
 
-    CFRelease(channels);
+    MCFRelease(channels);
 
     return subscription;
 }
 
 float get_gpu_residency_percent(IOReportSubscriptionRef subscription, CFMutableDictionaryRef subbedChannels) {
 
-    __block long value, value2, off, off2;
+    __block uint64_t value, value2, off, off2;
 
     IOReportSampleRef samples = IOReportCreateSamples(subscription, subbedChannels, NULL);
     sleep(1);
@@ -53,13 +56,16 @@ float get_gpu_residency_percent(IOReportSubscriptionRef subscription, CFMutableD
         }
     );
             
-    long doff = off2-off;
-    long dval = value2-value;
+    uint64_t doff = off2-off;
+    uint64_t dval = value2-value;
     float percentage = ((float)doff/(float)dval) *100.0f;
     percentage = 100.0f-percentage;
-        
-    CFRelease(samples);
-    CFRelease(samples2);
+
+    MCFRelease(samples);
+    MCFRelease(samples2);
+
+    printf("1 round");
+
     return percentage;
 
 }
