@@ -3,8 +3,13 @@
 
 #include "IOReport.h"
 
+extern int applesilicon_mchip;
+void charwrite(char *, int);
+void big_sig_handler(struct sigaction);
+void my_sig_handler(int);
+
 //gets input to get_gpu_residency_percent
-//free the return val and input to this function with CFRelease()
+//free the return val and input to this function with MCFRelease()
 IOReportSubscriptionRef get_input(CFMutableDictionaryRef *);
 
 //gets percentage of gpu active residency as a float
