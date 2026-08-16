@@ -1,50 +1,109 @@
-#include <IOKit/IOKitLib.h>
-#include <CoreFoundation/CoreFoundation.h>
 #include <stdio.h>
-
-typedef struct {
-    int core_count;
-    char chip_model[1024];
-} gpu_info_t;
-
-gpu_info_t get_gpu_info(); //gets gpu core count and chip model- returns NULL if failed
-CFMutableDictionaryRef get_properties_for_gpu(); //gets the CFDictionary of IOAccelerator (Graphics), returns NULL if failed
-int get_gpu_core_count(CFMutableDictionaryRef); //gets gpu core count as an int, returns 0 if failed 
-char *get_chip_model(CFMutableDictionaryRef, char *); //gets chip model as a string (char *), returns NULL if failed
+#include "include/staticstats.h"
 
 //gets gpu core count and chip model- returns NULL if failed
-gpu_info_t get_gpu_info() {
-    gpu_info_t gpu_info;
+gpu_info_t *get_gpu_info() {
+    gpu_info_t *head = NULL;
+    gpu_info_t *tail = NULL;
+    int gpu_num = 0;
 
-    CFMutableDictionaryRef properties = get_properties_for_gpu();
+    io_iterator_t iterator = get_iterator_for_gpus();
 
-    gpu_info.core_count = get_gpu_core_count(properties);
+    io_service_t service;
 
-    get_chip_model(properties, gpu_info.chip_model);
+    while ((service = IOIteratorNext(iterator)) != IO_OBJECT_NULL) {
+        gpu_num++;
+        
+        CFMutableDictionaryRef properties = NULL;
+        kern_return_t result = IORegistryEntryCreateCFProperties(service, &properties, kCFAllocatorDefault, 0);
 
-    CFRelease(properties);
-    return gpu_info;
+        if (result != KERN_SUCCESS) {
+            fprintf(stderr, "Error: Unable to create CF properties for \"IOAccelerator\"\n");
+
+            MCFRelease(properties);
+            IOObjectRelease(service);
+            break;
+        }
+
+        gpu_info_t *gpu = malloc(sizeof(gpu));
+
+        if(!gpu) {
+            fprintf(stderr, "Error: malloc() could not allocate correctly\n");
+
+            MCFRelease(properties);
+            IOObjectRelease(service);
+            break;
+        }
+
+        gpu->gpu_num = gpu_num;
+
+        gpu->core_count = get_gpu_core_count(properties);
+    
+        get_chip_model(properties, gpu->chip_model);
+
+        gpu->next_gpu = NULL;
+
+        if (!head)
+            head = gpu;
+        else
+            tail->next_gpu = gpu;
+        
+        tail = gpu;
+
+        IOObjectRelease(service); //discussion All objects returned by IOKitLib should be released with this function
+        MCFRelease(properties);
+    }
+
+    IOObjectRelease(iterator);
+    return head;
 }
 
 //gets the CFDictionary of IOAccelerator (Graphics), returns NULL if failed
-CFMutableDictionaryRef get_properties_for_gpu() {
-    char *find = "IOAccelerator";
-    io_service_t service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching(find));
-   
-    if (service == IO_OBJECT_NULL) {
-        fprintf(stderr, "Error: No matching service for \"%s\"\n", find);
+io_iterator_t get_iterator_for_gpus() {
+    CFMutableDictionaryRef matching = IOServiceMatching("IOAccelerator");
+
+    if (!matching) {
+        fprintf(stderr, "Error: No matching dictionary for \"IOAccelerator\"\n");
+        return IO_OBJECT_NULL;
+    }
+
+    io_iterator_t iterator;
+    kern_return_t result = IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator);
+
+    if (result != KERN_SUCCESS) {
+        fprintf(stderr, "Error: Unable to create CF properties for \"IOAccelerator\"\n");
+        return IO_OBJECT_NULL;
+    }
+
+    if (iterator == IO_OBJECT_NULL) {
+        fprintf(stderr, "Error: No GPU iterator\n");
+        return IO_OBJECT_NULL;
+    }
+
+    return iterator;
+}
+
+CFMutableDictionaryRef get_properties() {
+    CFMutableDictionaryRef matching = IOServiceMatching("IOAccelerator");
+
+    if (!matching) {
+        fprintf(stderr, "Error: No matching dictionary for \"IOAccelerator\"\n");
         return NULL;
     }
-    
+
+    io_service_t service = IOServiceGetMatchingService(kIOMainPortDefault, matching);
+
     CFMutableDictionaryRef properties = NULL;
+
     kern_return_t result = IORegistryEntryCreateCFProperties(service, &properties, kCFAllocatorDefault, 0);
 
     if (result != KERN_SUCCESS) {
-        fprintf(stderr, "Error: Unable to create CF properties for \"%s\"\n", find);
+        fprintf(stderr, "Error: Unable to create CF properties for \"IOAccelerator\"\n");
+
+        MCFRelease(properties);
+        IOObjectRelease(service);
         return NULL;
     }
-
-    IOObjectRelease(service); //discussion All objects returned by IOKitLib should be released with this function
 
     return properties;
 }
