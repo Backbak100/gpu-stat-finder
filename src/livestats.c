@@ -1,7 +1,7 @@
-#include "include/IOReport.h"
+#include "IOReport.h"
 #include <unistd.h>
 #include <time.h>
-#include "include/livestats.h"
+#include "livestats.h"
 
 IOReportSubscriptionRef get_input(CFMutableDictionaryRef *subbedChannels) {
 
