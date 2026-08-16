@@ -1,7 +1,7 @@
 #ifndef staticstatsh
 #define staticstatsh
 
-#include <CoreFoundation/CoreFoundation.h>
+#include "CoreFoundation.h"
 #include <IOKit/IOKitLib.h>
 
 typedef struct gpu_info {
