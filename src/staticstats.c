@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "include/staticstats.h"
+#include "staticstats.h"
 
 //gets gpu core count and chip model- returns NULL if failed
 gpu_info_t *get_gpu_info() {
