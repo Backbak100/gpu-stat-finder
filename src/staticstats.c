@@ -25,7 +25,7 @@ gpu_info_t *get_gpu_info() {
             break;
         }
 
-        gpu_info_t *gpu = malloc(sizeof(gpu));
+        gpu_info_t *gpu = malloc(sizeof(gpu_info_t));
 
         if(!gpu) {
             fprintf(stderr, "Error: malloc() could not allocate correctly\n");
