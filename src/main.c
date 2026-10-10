@@ -1,7 +1,7 @@
 #include "staticstats.h"
 #include "livestats.h"
 
-//compile as gcc main.c livestats.c staticstats.c sig_handler.c CoreFoundation.c -framework CoreFoundation -framework IOKit -lIOReport -fblocks
+//compile cmd from /src: gcc main.c livestats.c staticstats.c sig_handler.c CoreFoundation.c -framework CoreFoundation -framework IOKit -lIOReport -fblocks -I../include
 
 int applesilicon_mchip = 1;
 
