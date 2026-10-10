@@ -6,13 +6,9 @@ LDFLAGS = -framework CoreFoundation -framework IOKit -lIOReport
 TARGET = a.out
 
 SRC = src/main.c src/livestats.c src/staticstats.c src/sig_handler.c src/CoreFoundation.c
-OBJ = $(SRC:.c=.o)
 
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TARGET): $(SRC)
+	$(CC) $(SRC) $(LDFLAGS) $(CFLAGS) 
 
 clean:
 	rm -f $(OBJ) $(TARGET)
