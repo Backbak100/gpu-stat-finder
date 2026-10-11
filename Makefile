@@ -11,7 +11,7 @@ $(TARGET): $(SRC)
 	$(CC) $(SRC) $(LDFLAGS) $(CFLAGS) 
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(TARGET)
 
 run:
 	./$(TARGET)
